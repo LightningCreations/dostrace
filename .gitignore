@@ -1,0 +1,6 @@
+*.o
+*.exe
+*.EXE
+*.com
+*.COM
+build*/
