@@ -76,6 +76,16 @@ bool tick() {
     uint8_t inst = RAM[(regs.CS<<4)+regs.IP];
     regs.IP++;
     switch(inst) {
+    case 0x77: {
+        int8_t rel8 = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
+        if(!BIT(regs.FLAGS, 0) && !BIT(regs.FLAGS, 6)) {
+            regs.IP += rel8;
+            printf("Jumped conditionally to $%04X:%04X\n", regs.CS, regs.IP);
+        } else {
+            printf("Skipped conditional jump\n");
+        }
+        return 1;
+    }
     case 0x81: {
         uint8_t modregrm = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
         uint8_t reg = (modregrm >> 3) & 0x07;
@@ -113,6 +123,34 @@ bool tick() {
             exit(1);
         }
         break;
+    }
+    case 0xB9: {
+        uint16_t imm16 = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
+        imm16 |= RAM[(regs.CS<<4)+regs.IP] << 8; regs.IP++;
+        printf("Load value $%04X into register CX\n", imm16);
+        regs.CX = imm16;
+        return 1;
+    }
+    case 0xBB: {
+        uint16_t imm16 = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
+        imm16 |= RAM[(regs.CS<<4)+regs.IP] << 8; regs.IP++;
+        printf("Load value $%04X into register BX\n", imm16);
+        regs.BX = imm16;
+        return 1;
+    }
+    case 0xBE: {
+        uint16_t imm16 = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
+        imm16 |= RAM[(regs.CS<<4)+regs.IP] << 8; regs.IP++;
+        printf("Load value $%04X into register SI\n", imm16);
+        regs.SI = imm16;
+        return 1;
+    }
+    case 0xBF: {
+        uint16_t imm16 = RAM[(regs.CS<<4)+regs.IP]; regs.IP++;
+        imm16 |= RAM[(regs.CS<<4)+regs.IP] << 8; regs.IP++;
+        printf("Load value $%04X into register DI\n", imm16);
+        regs.DI = imm16;
+        return 1;
     }
     default:
         printf("Rdr forgot an instruction: %02X\n", inst);
